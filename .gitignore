@@ -1,2 +1,5 @@
 # backend
 backend/.venv
+backend/midi_files
+backend/data
+backend/model/data/Omnibook
