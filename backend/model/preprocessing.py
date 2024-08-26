@@ -5,9 +5,8 @@ import music21 as m21
 import os
 from music21 import environment
 
-PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/Midi"
+PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/Omnibook/MusicXml"
 APP_PATH = "/Applications/MuseScore 3.app/Contents/MacOS/mscore"
-from music21 import duration
 
 one = m21.duration.Duration(0.25)
 two = m21.duration.Duration(0.5)
@@ -38,20 +37,17 @@ def set_musescore_path(path):
 # duration: list of acceptable durations
 def filter_durations(tune, durations):
     new_elements = []
-    
-    for element in tune.flat.notesAndRests:
-        print(element.duration)
-        
+
+    for element in tune.flat.notesAndRests:    
         if element.duration not in durations: 
             # Replace note with rest if the duration is not acceptable
             plug_rest = m21.note.Rest(duration=element.duration)
             new_elements.append(plug_rest)
-            print("REST HERE")
         else:
             new_elements.append(element)
     
     # Clear the stream and add the new elements
-    tune.flat.notesAndRests.clear()
+    tune.flat.notesAndRests.stream().clear()
     tune.flat.notesAndRests.elements = new_elements
     
     return tune
@@ -69,20 +65,45 @@ def load_data(data):
     names = []
     for path, subdirs, files in os.walk(data):
         for file in files:
-            tune = m21.converter.parse(os.path.join(path, file))
-            names.append(file)
-            midiFiles.append(tune)
+            if(file.endswith('xml')):
+                tune = m21.converter.parse(os.path.join(path, file))
+                names.append(file)
+                midiFiles.append(tune)
         print("MIDI Files Loaded...")
+    
     return midiFiles, names
+
+def transpose_tune(tune):
+    key = tune.analyze("key")
+    if(key.mode == "major"):
+        interval = m21.interval.Interval(key.tonic, m21.pitch.Pitch("C"))
+    elif(key.mode == "minor"):
+        interval = m21.interval.Interval(key.tonic, m21.pitch.Pitch("A"))
+    
+    transposed_tune = tune.transpose(interval)
+
+    return transposed_tune
+
+
+
+
+def transpose_data(data):
+    new_data = []
+    
+    for tune in data:
+        new_data.append(transpose_tune(tune))
+    return new_data
+
 
 
 def preprocess():
     set_musescore_path(APP_PATH)
     files, names = load_data(PATH)
     data = filter_data(files)
-    print(names[1])
-    data[1].show()
+    transposed_data = transpose_data(data)
+    transposed_data[20].show()
+    data[20].show()
 
-
+    
 if __name__ == "__main__":
-    preprocess()
+    preprocess()  
