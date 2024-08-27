@@ -5,6 +5,7 @@ import music21 as m21
 import os
 from music21 import environment
 
+DATASET_PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/dataset"
 PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/Omnibook/MusicXml"
 APP_PATH = "/Applications/MuseScore 3.app/Contents/MacOS/mscore"
 
@@ -94,16 +95,46 @@ def transpose_data(data):
         new_data.append(transpose_tune(tune))
     return new_data
 
+def encode(tune, time_step=0.25):
+    encoded_tune = []
+    for token in tune.flat.notesAndRests:
+        syb = "--"
+        if isinstance(token, m21.note.Note):
+            syb = token.pitch.midi
+        elif isinstance(token, m21.note.Rest):
+            syb = "r"
+        steps = int(token.duration.quarterLength/time_step)
+
+        for step in range(steps):
+            if step == 0:
+                encoded_tune.append(syb)
+            else: encoded_tune.append("_")
+    
+    encoded_tune = " ".join(map(str,encoded_tune))
+
+    return encoded_tune
 
 
-def preprocess():
-    set_musescore_path(APP_PATH)
-    files, names = load_data(PATH)
+def preprocess(data_path):
+    
+
+    files, names = load_data(data_path)
     data = filter_data(files)
     transposed_data = transpose_data(data)
-    transposed_data[20].show()
-    data[20].show()
+
+
+    for i, tune in enumerate(transposed_data):
+
+        encoded_tune = encode(tune)
+
+        path = os.path.join(DATASET_PATH,str(tune.metadata.title))
+        with open(path, "w") as fp:
+            fp.write(encoded_tune)
+
+
+     
 
     
 if __name__ == "__main__":
-    preprocess()  
+    set_musescore_path(APP_PATH)
+    preprocess(PATH)  
