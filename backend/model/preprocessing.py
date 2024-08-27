@@ -4,12 +4,14 @@ import numpy as np
 import music21 as m21
 import os
 from music21 import environment
+import json
 
 DATASET_PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/dataset"
 PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/Omnibook/MusicXml"
 APP_PATH = "/Applications/MuseScore 3.app/Contents/MacOS/mscore"
 SEQUENCE_LEN = 64
 NEW_FILE_PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/merged_data"
+MAP_PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/mapping.json"
 
 one = m21.duration.Duration(0.25)
 two = m21.duration.Duration(0.5)
@@ -127,7 +129,7 @@ def merge_data(old_path, new_path, length):
             tunes = tunes + tune + " " +delimeter
     tunes = tunes[:-1]
 
-    with open(os.path.join(new_path, "merged_dataset"), "w") as fp:
+    with open(os.path.join(new_path, "merged_dataset.txt"), "w") as fp:
         fp.write(tunes)
     return tunes
 
@@ -136,6 +138,22 @@ def load(path):
     with open(path, "r") as fp:
         tune = fp.read()
     return tune
+
+def to_json(tunes,map_path):
+    hm = {}
+    tunes = tunes.split()
+
+    
+    vocab = list(set(tunes)) 
+    print(vocab)
+
+    for i, syb in enumerate(vocab):
+        hm[syb] = i
+
+
+    with open(map_path, "w") as fp:
+        json.dump(hm, fp, indent=4)
+
 
 
 
@@ -158,8 +176,13 @@ def preprocess(data_path):
 
      
 
-    
-if __name__ == "__main__":
+def main():
     set_musescore_path(APP_PATH)
     preprocess(PATH)  
     merged_data = merge_data(DATASET_PATH, NEW_FILE_PATH, SEQUENCE_LEN)
+    print(merged_data)
+    to_json(merged_data, MAP_PATH)
+
+         
+if __name__ == "__main__":
+    main()
