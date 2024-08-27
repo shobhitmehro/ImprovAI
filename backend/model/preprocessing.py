@@ -5,6 +5,8 @@ import music21 as m21
 import os
 from music21 import environment
 import json
+import tensorflow as tf
+from tensorflow import keras
 
 DATASET_PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/dataset"
 PATH = "/Users/shobhitmehrotra/Desktop/Projects/improvai/backend/model/data/Omnibook/MusicXml"
@@ -145,7 +147,6 @@ def to_json(tunes,map_path):
 
     
     vocab = list(set(tunes)) 
-    print(vocab)
 
     for i, syb in enumerate(vocab):
         hm[syb] = i
@@ -154,6 +155,35 @@ def to_json(tunes,map_path):
     with open(map_path, "w") as fp:
         json.dump(hm, fp, indent=4)
 
+def to_int(tunes):
+    tunes_in_int = []
+
+    with open(MAP_PATH, "r") as fp:
+        map = json.load(fp)
+    
+    tunes = tunes.split()
+
+    for syb in tunes:
+        tunes_in_int.append(map.get(syb))
+    
+    return tunes_in_int
+
+def generate_train_sequence(sequence_len):
+    tunes = load(os.path.join(NEW_FILE_PATH, "merged_dataset.txt")) 
+    int_songs = to_int(tunes)
+    num_sequences = len(int_songs) - sequence_len
+    inputs = []
+    targets = []
+
+    for i in range(num_sequences):
+        inputs.append(int_songs[i:i+sequence_len])
+        targets.append(int_songs[i+sequence_len])
+ 
+    vocab_size = len(set(int_songs))
+    inputs = tf.keras.utils.to_categorical(inputs, num_classes=vocab_size)
+    targets = np.array(targets)
+
+    return inputs, targets
 
 
 
@@ -180,9 +210,11 @@ def main():
     set_musescore_path(APP_PATH)
     preprocess(PATH)  
     merged_data = merge_data(DATASET_PATH, NEW_FILE_PATH, SEQUENCE_LEN)
-    print(merged_data)
     to_json(merged_data, MAP_PATH)
+    inputs, targets = generate_train_sequence(SEQUENCE_LEN)
 
+    print(f"Inputs: {inputs.shape}")
+    print(f"Targets: {targets.shape}")
          
 if __name__ == "__main__":
     main()

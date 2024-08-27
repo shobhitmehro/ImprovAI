@@ -16,3 +16,5 @@ zipp==3.19.2
 tensorflow
 music21
 pandas
+json
+tensorflow
