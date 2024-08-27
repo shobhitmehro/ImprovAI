@@ -4,4 +4,5 @@ backend/midi_files
 backend/data
 backend/model/data/Omnibook
 
-.venv
+improvai/.venv
+/.venv
