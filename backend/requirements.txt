@@ -18,3 +18,4 @@ music21
 pandas
 json
 tensorflow
+matplotlib==3.9.2
