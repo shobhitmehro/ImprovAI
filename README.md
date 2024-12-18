@@ -1,6 +1,6 @@
 # **ImprovAI**
 
-ImprovAI is a ml application designed to generate jazz melodies. It uses a LSTM model to generate improvisation lines. 
+ImprovAI is a web app that uses an LSTM model to generate jazz improvisations.
 
 ## Technologies
 * Frontend: React 
